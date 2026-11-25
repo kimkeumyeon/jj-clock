@@ -8,13 +8,13 @@
 <meta name="apple-mobile-web-app-title" content="JJ 시계">
 <meta name="application-name" content="JJ WORKS 탁상시계">
 <meta name="format-detection" content="telephone=no">
-<meta name="theme-color" content="#0a0d11">
+<meta name="theme-color" content="#05070a">
 <title>JJ WORKS · 탁상시계</title>
 <style>
   * { -webkit-box-sizing: border-box; box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0; width: 100%; height: 100%;
-    background-color: #0a0d11;
+    background-color: #05070a;
   }
   html {
     -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; text-size-adjust: 100%;
@@ -32,135 +32,228 @@
 
   .app {
     position: fixed; top: 0; right: 0; bottom: 0; left: 0;
-    display: -webkit-box; display: -ms-flexbox; display: flex;
-    -webkit-box-orient: vertical; -webkit-box-direction: normal;
-    -ms-flex-direction: column; flex-direction: column;
     overflow: hidden;
     -webkit-transition: background-color .5s ease, color .5s ease;
     transition: background-color .5s ease, color .5s ease;
   }
 
-  .bar {
-    position: relative; z-index: 3; flex: 0 0 auto;
-    display: -webkit-box; display: -ms-flexbox; display: flex;
-    -webkit-box-align: center; -ms-flex-align: center; align-items: center;
-    -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between;
-    padding: 13px 22px;
-  }
-  .mark {
-    font-size: 11px; line-height: 1; font-weight: 700;
-    letter-spacing: .32em; text-transform: uppercase;
-  }
-
   .stage {
-    flex: 1 1 auto; min-height: 0;
+    position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+    /* 하단 컨트롤 바가 떠도 카드가 가려지지 않도록 아래 여백을 미리 확보 */
+    padding: 16px 0 96px 0;
     display: -webkit-box; display: -ms-flexbox; display: flex;
-    -webkit-box-orient: vertical; -webkit-box-direction: normal;
-    -ms-flex-direction: column; flex-direction: column;
     -webkit-box-align: center; -ms-flex-align: center; align-items: center;
     -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center;
-    padding: 0 18px; overflow: hidden;
+    overflow: hidden;
   }
 
-  .clock {
+  .cards {
     display: -webkit-box; display: -ms-flexbox; display: flex;
-    -webkit-box-align: baseline; -ms-flex-align: baseline; align-items: baseline;
+    -webkit-box-align: center; -ms-flex-align: center; align-items: center;
     -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center;
     white-space: nowrap;
-    font-size: 200px; line-height: 1; font-weight: 800; letter-spacing: 0;
-    -webkit-font-variant-numeric: tabular-nums; font-variant-numeric: tabular-nums;
-    -webkit-transition: color .5s ease; transition: color .5s ease;
-  }
-  .d {
-    display: inline-block; width: .60em; text-align: center;
-  }
-  .colon {
-    display: inline-block; width: .34em; text-align: center;
-    position: relative; top: -.03em;
-    -webkit-transition: opacity .22s linear; transition: opacity .22s linear;
-  }
-  .ampm {
-    display: inline-block; white-space: nowrap;
-    font-size: .155em; font-weight: 700; letter-spacing: .04em;
-    margin-right: .30em; -ms-flex-item-align: center; align-self: center;
-  }
-  .sec {
-    display: inline-block; white-space: nowrap;
-    font-size: .30em; font-weight: 700; letter-spacing: 0;
-    margin-left: .10em;
-    -webkit-font-variant-numeric: tabular-nums; font-variant-numeric: tabular-nums;
-  }
-  .sec .d { width: .62em; }
-
-  .date {
-    display: block; font-size: 20px; line-height: 1.2;
-    font-weight: 500; letter-spacing: .01em;
-    white-space: nowrap; text-align: center;
   }
 
-  .ctrl {
+  /* ── 플립 카드 ── */
+  .card {
+    position: relative;
+    width: 300px; height: 375px;
+    border-radius: 40px;
+    overflow: hidden;
+  }
+  .cap {
+    position: absolute; left: 0; right: 0; top: 34px;
+    text-align: center; white-space: nowrap;
+    font-size: 18px; line-height: 1.1; font-weight: 600;
+    letter-spacing: .02em;
+    z-index: 4;
+  }
+  .digits {
+    position: absolute; left: 0; right: 0; top: 50%;
+    text-align: center; white-space: nowrap;
+    -webkit-transform: translateY(-50%); transform: translateY(-50%);
+    z-index: 2;
+  }
+  .num {
+    display: inline-block;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+    -webkit-transform-origin: 50% 50%; transform-origin: 50% 50%;
+  }
+  .corner {
+    position: absolute; bottom: 36px;
+    font-size: 22px; line-height: 1; font-weight: 700;
+    letter-spacing: .02em;
+    z-index: 4;
+    font-variant-numeric: tabular-nums;
+  }
+  .corner-left { left: 34px; }
+  .corner-right { right: 34px; }
+
+  /* 카드 중앙 힌지선 + 상하 입체 음영 */
+  .hinge {
+    position: absolute; left: 0; right: 0; top: 50%;
+    height: 1px; z-index: 1;
+    pointer-events: none;
+  }
+  .shade-top, .shade-bot {
+    position: absolute; left: 0; right: 0; height: 50%;
+    z-index: 1; pointer-events: none;
+  }
+  .shade-top { top: 0; }
+  .shade-bot { bottom: 0; }
+
+  /* 숫자가 바뀔 때의 짧은 플립 펄스 */
+  @-webkit-keyframes cardTick {
+    0%   { -webkit-transform: perspective(760px) rotateX(0deg); }
+    45%  { -webkit-transform: perspective(760px) rotateX(-9deg); }
+    100% { -webkit-transform: perspective(760px) rotateX(0deg); }
+  }
+  @keyframes cardTick {
+    0%   { transform: perspective(760px) rotateX(0deg); }
+    45%  { transform: perspective(760px) rotateX(-9deg); }
+    100% { transform: perspective(760px) rotateX(0deg); }
+  }
+  .card.tick .num {
+    -webkit-animation: cardTick .42s ease-out 1;
+    animation: cardTick .42s ease-out 1;
+  }
+
+  /* ── 하단 컨트롤 바 ── */
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    z-index: 30;
+    padding: 30px 14px 16px 14px;
+    opacity: 1;
+    -webkit-transform: translateY(0); transform: translateY(0);
+    -webkit-transition: opacity .45s ease, -webkit-transform .45s ease;
+    transition: opacity .45s ease, transform .45s ease;
+  }
+  .bar.hidden {
+    opacity: 0;
+    -webkit-transform: translateY(110%); transform: translateY(110%);
+    pointer-events: none;
+  }
+  .bar-inner {
+    display: -webkit-box; display: -ms-flexbox; display: flex;
+    -ms-flex-wrap: wrap; flex-wrap: wrap;
+    -webkit-box-align: center; -ms-flex-align: center; align-items: center;
+    -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center;
+  }
+  .group {
     display: -webkit-box; display: -ms-flexbox; display: flex;
     -webkit-box-align: center; -ms-flex-align: center; align-items: center;
+    margin: 0 7px;
+  }
+  .brand {
+    font-size: 10px; line-height: 1; font-weight: 700;
+    letter-spacing: .3em; text-transform: uppercase;
+    margin: 0 12px 0 2px; opacity: .5;
   }
   .btn {
-    font-family: inherit; font-size: 11px; line-height: 1; font-weight: 700;
-    letter-spacing: .06em;
-    padding: 8px 12px; margin-left: 8px;
+    font-family: inherit; font-size: 12px; line-height: 1; font-weight: 600;
+    letter-spacing: .02em;
+    padding: 9px 13px; margin: 4px 3px;
     background-color: transparent; background-image: none;
     border-radius: 999px; border-width: 1px; border-style: solid;
     -webkit-appearance: none; appearance: none;
     cursor: pointer;
-    -webkit-transition: opacity .2s ease, border-color .2s ease;
-    transition: opacity .2s ease, border-color .2s ease;
+    -webkit-transition: opacity .2s ease, border-color .2s ease, color .2s ease;
+    transition: opacity .2s ease, border-color .2s ease, color .2s ease;
   }
-  .btn:active { opacity: 1 !important; }
+  .btn:active { opacity: .62; }
 
-  .hint {
-    position: absolute; left: 50%; top: 50%;
-    -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%);
-    font-size: 11px; letter-spacing: .04em; white-space: nowrap;
-    opacity: 1; pointer-events: none;
+  /* ── 야간 디밍 오버레이 ── */
+  .dimmer {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+    z-index: 40;
+    background-color: #000000;
+    opacity: 0; pointer-events: none;
     -webkit-transition: opacity .9s ease; transition: opacity .9s ease;
   }
-  .hint.gone { opacity: 0; }
+  .dim .dimmer { opacity: .62; }
 
   /* ── 다크 테마 ── */
   [data-theme="dark"] .app {
-    background-color: #0a0d11;
-    background-image: -webkit-radial-gradient(50% 42%, 160% 140%, #18232f 0%, #0b1016 58%, #05070a 100%);
-    background-image: radial-gradient(130% 110% at 50% 42%, #18232f 0%, #0b1016 58%, #05070a 100%);
-    color: #f2f6fa;
+    background-color: #05070a;
+    background-image: -webkit-radial-gradient(50% 42%, 150% 130%, #121a24 0%, #080c11 56%, #030507 100%);
+    background-image: radial-gradient(120% 100% at 50% 42%, #121a24 0%, #080c11 56%, #030507 100%);
+    color: #f4f7fb;
   }
-  [data-theme="dark"] .mark { color: rgba(232, 240, 248, .40); }
-  [data-theme="dark"] .clock { color: #f4f7fb; }
-  [data-theme="dark"] .colon { color: rgba(255, 179, 64, .88); }
-  [data-theme="dark"] .ampm { color: rgba(255, 179, 64, .88); }
-  [data-theme="dark"] .sec { color: #ffb340; }
-  [data-theme="dark"] .date { color: rgba(223, 233, 244, .60); }
-  [data-theme="dark"] .btn { color: rgba(223, 233, 244, .55); border-color: rgba(150, 170, 192, .30); }
-  [data-theme="dark"] .hint { color: rgba(223, 233, 244, .36); }
+  [data-theme="dark"] .card {
+    background-color: #0d1115;
+    background-image: -webkit-linear-gradient(top, #1a2129 0%, #121821 48%, #0d1218 52%, #080c10 100%);
+    background-image: linear-gradient(to bottom, #1a2129 0%, #121821 48%, #0d1218 52%, #080c10 100%);
+    border: 1px solid rgba(255, 255, 255, .06);
+    box-shadow: 0 24px 46px rgba(0, 0, 0, .58), 0 2px 6px rgba(0, 0, 0, .42);
+  }
+  [data-theme="dark"] .num { color: #f6f8fb; }
+  [data-theme="dark"] .cap { color: rgba(205, 219, 233, .62); }
+  [data-theme="dark"] .corner { color: rgba(222, 232, 242, .58); }
+  [data-theme="dark"] .hinge {
+    background-color: rgba(0, 0, 0, .55);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .05);
+  }
+  [data-theme="dark"] .shade-top {
+    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, .05) 0%, rgba(255, 255, 255, 0) 34%, rgba(0, 0, 0, 0) 88%, rgba(0, 0, 0, .08) 100%);
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, .05) 0%, rgba(255, 255, 255, 0) 34%, rgba(0, 0, 0, 0) 88%, rgba(0, 0, 0, .08) 100%);
+  }
+  [data-theme="dark"] .shade-bot {
+    background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, .30) 0%, rgba(0, 0, 0, 0) 9%, rgba(255, 255, 255, .045) 11%, rgba(255, 255, 255, 0) 34%, rgba(0, 0, 0, .10) 100%);
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, .30) 0%, rgba(0, 0, 0, 0) 9%, rgba(255, 255, 255, .045) 11%, rgba(255, 255, 255, 0) 34%, rgba(0, 0, 0, .10) 100%);
+  }
+  [data-theme="dark"] .bar {
+    background-image: -webkit-linear-gradient(top, rgba(3, 5, 7, 0) 0%, rgba(3, 5, 7, .88) 52%, rgba(3, 5, 7, .97) 100%);
+    background-image: linear-gradient(to bottom, rgba(3, 5, 7, 0) 0%, rgba(3, 5, 7, .88) 52%, rgba(3, 5, 7, .97) 100%);
+  }
+  [data-theme="dark"] .brand { color: rgba(226, 236, 246, .45); }
+  [data-theme="dark"] .btn { color: rgba(226, 237, 248, .76); border-color: rgba(158, 178, 200, .36); }
+  [data-theme="dark"] .btn.on { color: #ffc061; border-color: rgba(255, 179, 64, .72); }
 
   /* ── 라이트 테마 ── */
   [data-theme="light"] .app {
-    background-color: #f3f5f7;
-    background-image: -webkit-radial-gradient(50% 38%, 160% 140%, #ffffff 0%, #eef1f5 58%, #e1e6ec 100%);
-    background-image: radial-gradient(130% 110% at 50% 38%, #ffffff 0%, #eef1f5 58%, #e1e6ec 100%);
+    background-color: #eef1f5;
+    background-image: -webkit-radial-gradient(50% 38%, 150% 130%, #ffffff 0%, #eef1f5 58%, #dfe4ea 100%);
+    background-image: radial-gradient(120% 100% at 50% 38%, #ffffff 0%, #eef1f5 58%, #dfe4ea 100%);
     color: #0e141a;
   }
-  [data-theme="light"] .mark { color: rgba(16, 24, 32, .38); }
-  [data-theme="light"] .clock { color: #0f151b; }
-  [data-theme="light"] .colon { color: rgba(178, 102, 0, .88); }
-  [data-theme="light"] .ampm { color: rgba(178, 102, 0, .88); }
-  [data-theme="light"] .sec { color: #b86600; }
-  [data-theme="light"] .date { color: rgba(20, 28, 36, .62); }
-  [data-theme="light"] .btn { color: rgba(20, 28, 36, .58); border-color: rgba(46, 62, 80, .24); }
-  [data-theme="light"] .hint { color: rgba(20, 28, 36, .40); }
+  [data-theme="light"] .card {
+    background-color: #f7f9fb;
+    background-image: -webkit-linear-gradient(top, #ffffff 0%, #f6f9fc 48%, #eef3f8 52%, #e6ecf2 100%);
+    background-image: linear-gradient(to bottom, #ffffff 0%, #f6f9fc 48%, #eef3f8 52%, #e6ecf2 100%);
+    border: 1px solid rgba(16, 24, 32, .07);
+    box-shadow: 0 20px 38px rgba(22, 34, 48, .16), 0 2px 5px rgba(22, 34, 48, .08);
+  }
+  [data-theme="light"] .num { color: #0f151b; }
+  [data-theme="light"] .cap { color: rgba(22, 32, 42, .55); }
+  [data-theme="light"] .corner { color: rgba(26, 36, 46, .52); }
+  [data-theme="light"] .hinge {
+    background-color: rgba(16, 24, 32, .22);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .95);
+  }
+  [data-theme="light"] .shade-top {
+    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0) 80%, rgba(16, 24, 32, .05) 100%);
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0) 80%, rgba(16, 24, 32, .05) 100%);
+  }
+  [data-theme="light"] .shade-bot {
+    background-image: -webkit-linear-gradient(top, rgba(16, 24, 32, .12) 0%, rgba(16, 24, 32, 0) 7%, rgba(255, 255, 255, .8) 9%, rgba(255, 255, 255, 0) 26%, rgba(16, 24, 32, .03) 100%);
+    background-image: linear-gradient(to bottom, rgba(16, 24, 32, .12) 0%, rgba(16, 24, 32, 0) 7%, rgba(255, 255, 255, .8) 9%, rgba(255, 255, 255, 0) 26%, rgba(16, 24, 32, .03) 100%);
+  }
+  [data-theme="light"] .bar {
+    background-image: -webkit-linear-gradient(top, rgba(238, 241, 245, 0) 0%, rgba(238, 241, 245, .90) 52%, rgba(232, 236, 241, .98) 100%);
+    background-image: linear-gradient(to bottom, rgba(238, 241, 245, 0) 0%, rgba(238, 241, 245, .90) 52%, rgba(232, 236, 241, .98) 100%);
+  }
+  [data-theme="light"] .brand { color: rgba(20, 28, 36, .42); }
+  [data-theme="light"] .btn { color: rgba(20, 28, 36, .72); border-color: rgba(46, 62, 80, .28); }
+  [data-theme="light"] .btn.on { color: #9a5100; border-color: rgba(178, 96, 0, .62); }
 
-  @media (max-width: 560px) {
-    .hint { display: none; }
-    .bar { padding: 10px 14px; }
-    .mark { font-size: 10px; letter-spacing: .26em; }
-    .btn { font-size: 10px; padding: 7px 10px; margin-left: 6px; }
+  @media (max-width: 620px) {
+    .stage { padding: 10px 0 86px 0; }
+    .btn { font-size: 11px; padding: 8px 10px; }
+    .group { margin: 0 4px; }
+    .brand { display: none; }
   }
 </style>
 </head>
@@ -168,28 +261,51 @@
 
 <div class="app" id="app">
 
-  <div class="bar bar-top">
-    <span class="mark">JJ WORKS</span>
-  </div>
-
   <div class="stage" id="stage">
-    <div class="clock" id="clock">
-      <span class="ampm" id="ampm">오후</span>
-      <span class="time" id="time"></span>
-      <span class="sec" id="sec"></span>
+    <div class="cards" id="cards">
+
+      <div class="card" id="cardH">
+        <div class="cap" id="capDate">26. 11. 25.</div>
+        <div class="digits"><span class="num" id="numH">16</span></div>
+        <div class="shade-top"></div>
+        <div class="shade-bot"></div>
+        <div class="hinge"></div>
+        <div class="corner corner-left" id="ampmEl">오후</div>
+      </div>
+
+      <div class="card" id="cardM">
+        <div class="cap" id="capDow">수요일</div>
+        <div class="digits"><span class="num" id="numM">32</span></div>
+        <div class="shade-top"></div>
+        <div class="shade-bot"></div>
+        <div class="hinge"></div>
+        <div class="corner corner-right" id="secEl">37</div>
+      </div>
+
     </div>
-    <div class="date" id="date"><span id="dateText">2026년 11월 23일 월요일</span></div>
   </div>
 
-  <div class="bar bar-bottom">
-    <span class="mark">JJ WORKS</span>
-    <span class="hint" id="hint">화면 탭 = 다크/라이트 &middot; iPad &lsquo;자동 잠금&rsquo;은 &lsquo;안 함&rsquo; 권장</span>
-    <span class="ctrl">
-      <button type="button" class="btn" id="bTheme" aria-label="다크 라이트 테마 전환">다크</button>
-      <button type="button" class="btn" id="bHour" aria-label="12시간제와 24시간제 전환">24시간</button>
-      <button type="button" class="btn" id="bSec" aria-label="초 표시 켜기 끄기">초 표시</button>
-    </span>
+  <div class="bar" id="bar">
+    <div class="bar-inner">
+      <span class="brand">JJ WORKS</span>
+      <span class="group">
+        <button type="button" class="btn on" id="bModeClock" aria-label="시계 모드">시계</button>
+        <button type="button" class="btn" id="bModePomo" aria-label="포모도로 모드">포모도로</button>
+      </span>
+      <span class="group" id="pomoCtrl">
+        <button type="button" class="btn" id="bStart" aria-label="포모도로 시작 일시정지">시작</button>
+        <button type="button" class="btn" id="bReset" aria-label="포모도로 리셋">리셋</button>
+      </span>
+      <span class="group">
+        <button type="button" class="btn" id="bTheme" aria-label="다크 라이트 테마 전환">다크</button>
+        <button type="button" class="btn" id="bHour" aria-label="24시간제와 12시간제 전환">24시간</button>
+        <button type="button" class="btn" id="bSec" aria-label="초 표시 켜기 끄기">초 표시</button>
+        <button type="button" class="btn" id="bDim" aria-label="야간 디밍 켜기 끄기">야간 디밍</button>
+      </span>
+    </div>
   </div>
+
+  <div class="dimmer" id="dimmer"></div>
 
 </div>
 
@@ -201,31 +317,47 @@
   var K_THEME = 'jjclock.theme';
   var K_HOUR = 'jjclock.hour24';
   var K_SEC = 'jjclock.sec';
+  var K_DIM = 'jjclock.dim';
+
+  var FOCUS_SEC = 25 * 60;
+  var BREAK_SEC = 5 * 60;
+  var AUTO_HIDE_MS = 3000;
 
   var htmlEl = document.documentElement;
+  var appEl = document.getElementById('app');
   var stageEl = document.getElementById('stage');
-  var clockEl = document.getElementById('clock');
-  var timeEl = document.getElementById('time');
-  var secEl = document.getElementById('sec');
-  var ampmEl = document.getElementById('ampm');
-  var dateEl = document.getElementById('date');
-  var dateTextEl = document.getElementById('dateText');
-  var hintEl = document.getElementById('hint');
+  var barEl = document.getElementById('bar');
+  var cardHEl = document.getElementById('cardH');
+  var cardMEl = document.getElementById('cardM');
+  var numHEl = document.getElementById('numH');
+  var numMEl = document.getElementById('numM');
+  var capDateEl = document.getElementById('capDate');
+  var capDowEl = document.getElementById('capDow');
+  var ampmEl = document.getElementById('ampmEl');
+  var secEl = document.getElementById('secEl');
+  var pomoCtrlEl = document.getElementById('pomoCtrl');
+  var metaTheme = document.querySelector('meta[name="theme-color"]');
+
+  var btnModeClock = document.getElementById('bModeClock');
+  var btnModePomo = document.getElementById('bModePomo');
+  var btnStart = document.getElementById('bStart');
+  var btnReset = document.getElementById('bReset');
   var btnTheme = document.getElementById('bTheme');
   var btnHour = document.getElementById('bHour');
   var btnSec = document.getElementById('bSec');
+  var btnDim = document.getElementById('bDim');
 
-  var HDIGITS = [];
-  var SDIGITS = [];
-  var colonEl = null;
-  var metaTheme = null;
+  var state = { theme: 'dark', hour24: true, sec: true, dim: false, mode: 'clock' };
+  var pomo = { running: false, remain: FOCUS_SEC, phase: 'focus', endAt: 0 };
 
-  var state = { theme: 'dark', hour24: true, sec: true };
+  var lastH = '';
+  var lastM = '';
   var lastDateKey = '';
+  var hideTimer = null;
   var fitTimer = null;
-  var LAST_COLON = '';
+  var pulseTimers = {};
 
-  /* ── 저장소 (localStorage는 사파리 사생활 보호 모드에서 예외가 날 수 있어 감싼다) ── */
+  /* ── 저장소 (사파리 사생활 보호 모드에서 예외가 날 수 있어 감싼다) ── */
   function lsGet(key) {
     try {
       return window.localStorage.getItem(key);
@@ -251,51 +383,66 @@
     }
   }
 
-  function makeDigit() {
-    var sp = document.createElement('span');
-    sp.className = 'd';
-    sp.appendChild(document.createTextNode('0'));
-    return sp;
+  function nowMs() {
+    return (new Date()).getTime();
   }
 
-  function buildTime() {
-    var i, sp;
-    while (timeEl.firstChild) {
-      timeEl.removeChild(timeEl.firstChild);
+  /* ── 숫자 갱신 + 바뀔 때 짧은 플립 펄스 ── */
+  function pulse(card) {
+    if (!card) {
+      return;
     }
-    HDIGITS = [];
-    for (i = 0; i < 2; i++) {
-      sp = makeDigit();
-      timeEl.appendChild(sp);
-      HDIGITS.push(sp);
+    var id = card.id;
+    card.className = card.className.replace(/\s*tick/g, '');
+    var force = card.offsetWidth; /* 리플로우 강제 */
+    if (force < 0) {
+      force = 0;
     }
-    colonEl = document.createElement('span');
-    colonEl.className = 'colon';
-    colonEl.appendChild(document.createTextNode(':'));
-    timeEl.appendChild(colonEl);
-    for (i = 2; i < 4; i++) {
-      sp = makeDigit();
-      timeEl.appendChild(sp);
-      HDIGITS.push(sp);
+    card.className = card.className + ' tick';
+    if (pulseTimers[id]) {
+      clearTimeout(pulseTimers[id]);
     }
+    pulseTimers[id] = setTimeout(function () {
+      card.className = card.className.replace(/\s*tick/g, '');
+      pulseTimers[id] = null;
+    }, 470);
   }
 
-  function buildSec() {
-    var i, sp;
-    while (secEl.firstChild) {
-      secEl.removeChild(secEl.firstChild);
+  function setNum(el, card, txt, animate) {
+    if (el.textContent === txt) {
+      return;
     }
-    SDIGITS = [];
-    for (i = 0; i < 2; i++) {
-      sp = makeDigit();
-      secEl.appendChild(sp);
-      SDIGITS.push(sp);
+    el.textContent = txt;
+    if (animate) {
+      pulse(card);
     }
   }
 
-  /* ── 시간 표시 ── */
-  function render() {
-    var now = new Date();
+  function setOn(btn, on) {
+    var c = ' ' + btn.className + ' ';
+    c = c.replace(/ on /g, ' ');
+    c = c.replace(/\s+/g, ' ');
+    c = c.replace(/^ /, '');
+    c = c.replace(/ $/, '');
+    if (on) {
+      c = c + ' on';
+    }
+    btn.className = c;
+  }
+
+  /* ── 날짜·요일 ── */
+  function updateDate(now) {
+    var dkey = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
+    if (dkey === lastDateKey) {
+      return;
+    }
+    lastDateKey = dkey;
+    setText(capDateEl, p2(now.getFullYear() % 100) + '. ' + p2(now.getMonth() + 1) + '. ' + p2(now.getDate()) + '.');
+    setText(capDowEl, DAYS[now.getDay()]);
+  }
+
+  /* ── 시계 렌더 ── */
+  function renderClock(now) {
     var h = now.getHours();
     var m = now.getMinutes();
     var s = now.getSeconds();
@@ -308,117 +455,163 @@
         hh = 12;
       }
       label = (h < 12 ? '오전' : '오후');
+      setText(ampmEl, label);
+      ampmEl.style.display = 'block';
+    } else {
+      ampmEl.style.display = 'none';
     }
 
     var hs = p2(hh);
     var ms = p2(m);
-    setText(HDIGITS[0], hs.charAt(0));
-    setText(HDIGITS[1], hs.charAt(1));
-    setText(HDIGITS[2], ms.charAt(0));
-    setText(HDIGITS[3], ms.charAt(1));
+    if (hs !== lastH) {
+      lastH = hs;
+      setNum(numHEl, cardHEl, hs, true);
+    }
+    if (ms !== lastM) {
+      lastM = ms;
+      setNum(numMEl, cardMEl, ms, true);
+    }
 
     if (state.sec) {
-      var ss = p2(s);
-      setText(SDIGITS[0], ss.charAt(0));
-      setText(SDIGITS[1], ss.charAt(1));
+      setText(secEl, p2(s));
+      secEl.style.display = 'block';
+    } else {
+      secEl.style.display = 'none';
     }
 
-    setText(ampmEl, label);
-
-    var op = (s % 2 === 0) ? '1' : '0.72';
-    if (colonEl && op !== LAST_COLON) {
-      LAST_COLON = op;
-      colonEl.style.opacity = op;
-    }
-
-    var dkey = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
-    if (dkey !== lastDateKey) {
-      lastDateKey = dkey;
-      setText(dateTextEl, now.getFullYear() + '년 ' + (now.getMonth() + 1) + '월 ' + now.getDate() + '일 ' + DAYS[now.getDay()]);
-      fit();
-    }
+    updateDate(now);
   }
 
-  /* ── 화면에 꽉 차게 크기 맞추기 (clamp() 미지원 대응: 직접 측정해서 px로 지정) ── */
-  function fit() {
-    var TRIAL = 60;
-    var padX = 36;
-    var stageW = stageEl.clientWidth || window.innerWidth;
-    var availW = stageW - padX;
-    if (availW < 60) {
-      availW = 60;
-    }
-
-    clockEl.style.fontSize = TRIAL + 'px';
-    var wTrial = clockEl.getBoundingClientRect().width;
-    var hTrial = clockEl.getBoundingClientRect().height;
-    if (!wTrial || !hTrial) {
-      wTrial = 195;
-      hTrial = TRIAL;
-    }
-
-    var wLimit = (availW * 0.94) * TRIAL / wTrial;
-
-    var trialDate = Math.round(Math.max(16, Math.min(46, wLimit * 0.17)));
-    dateEl.style.fontSize = trialDate + 'px';
-    dateEl.style.marginTop = Math.round(trialDate * 0.85) + 'px';
-    var dateH = dateEl.getBoundingClientRect().height;
-
-    var stageH = stageEl.clientHeight || window.innerHeight;
-    var availH = stageH - dateH - Math.round(trialDate * 0.85) - 12;
-    if (availH < 90) {
-      availH = 90;
-    }
-    var hLimit = (availH * 0.98) * TRIAL / hTrial;
-
-    var px = Math.min(wLimit, hLimit);
-    if (px < 44) {
-      px = 44;
-    }
-    px = Math.floor(px);
-    clockEl.style.fontSize = px + 'px';
-
-    dateEl.style.fontSize = '100px';
-    var dW = dateTextEl.getBoundingClientRect().width;
-    if (!dW) {
-      dW = 700;
-    }
-    var dLimitW = (availW * 0.96) * 100 / dW;
-    var dSize = Math.min(px * 0.17, 46, dLimitW);
-    if (dSize < 16) {
-      dSize = 16;
-    }
-    dSize = Math.floor(dSize);
-    dateEl.style.fontSize = dSize + 'px';
-    dateEl.style.marginTop = Math.round(dSize * 0.85) + 'px';
+  /* ── 포모도로 ── */
+  function phaseLength() {
+    return pomo.phase === 'focus' ? FOCUS_SEC : BREAK_SEC;
   }
 
-  function scheduleFit() {
-    if (fitTimer) {
-      clearTimeout(fitTimer);
-    }
-    fitTimer = setTimeout(function () {
-      fitTimer = null;
-      fit();
-    }, 120);
+  function renderPomo() {
+    var mm = Math.floor(pomo.remain / 60);
+    var ss = pomo.remain % 60;
+    setNum(numHEl, cardHEl, p2(mm), false);
+    setNum(numMEl, cardMEl, p2(ss), false);
+    setText(secEl, pomo.phase === 'focus' ? '집중' : '휴식');
+    secEl.style.display = 'block';
+    ampmEl.style.display = 'none';
+    updateDate(new Date());
   }
 
-  /* ── 설정 반영 ── */
+  function finishPhase() {
+    pomo.running = false;
+    if (pomo.phase === 'focus') {
+      pomo.phase = 'break';
+    } else {
+      pomo.phase = 'focus';
+    }
+    pomo.remain = phaseLength();
+    pomo.endAt = 0;
+    updatePomoBtn();
+    pulse(cardHEl);
+    pulse(cardMEl);
+    showBar();
+  }
+
+  function pomoTick() {
+    if (pomo.running) {
+      var left = Math.ceil((pomo.endAt - nowMs()) / 1000);
+      if (left < 0) {
+        left = 0;
+      }
+      pomo.remain = left;
+      renderPomo();
+      if (left === 0) {
+        finishPhase();
+        renderPomo();
+      }
+      return;
+    }
+    renderPomo();
+  }
+
+  function updatePomoBtn() {
+    setText(btnStart, pomo.running ? '일시정지' : '시작');
+    setOn(btnStart, pomo.running);
+  }
+
+  function startPause() {
+    if (state.mode !== 'pomo') {
+      return;
+    }
+    if (pomo.running) {
+      var left = Math.round((pomo.endAt - nowMs()) / 1000);
+      if (left < 0) {
+        left = 0;
+      }
+      pomo.remain = left;
+      pomo.running = false;
+    } else {
+      if (pomo.remain <= 0) {
+        pomo.remain = phaseLength();
+      }
+      pomo.endAt = nowMs() + pomo.remain * 1000;
+      pomo.running = true;
+    }
+    updatePomoBtn();
+    renderPomo();
+  }
+
+  function resetPomo() {
+    pomo.running = false;
+    pomo.remain = phaseLength();
+    pomo.endAt = 0;
+    updatePomoBtn();
+    renderPomo();
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    if (mode === 'pomo') {
+      pomo.running = false;
+      pomo.phase = 'focus';
+      pomo.remain = FOCUS_SEC;
+      pomo.endAt = 0;
+      updatePomoBtn();
+    } else {
+      lastH = '';
+      lastM = '';
+    }
+    updateModeUI();
+    render();
+  }
+
+  function updateModeUI() {
+    var isPomo = (state.mode === 'pomo');
+    setOn(btnModeClock, !isPomo);
+    setOn(btnModePomo, isPomo);
+    pomoCtrlEl.style.display = isPomo ? '' : 'none';
+  }
+
+  /* ── 테마·형식·디밍 ── */
   function applyTheme() {
     htmlEl.setAttribute('data-theme', state.theme);
     setText(btnTheme, state.theme === 'dark' ? '다크' : '라이트');
     if (metaTheme) {
-      metaTheme.setAttribute('content', state.theme === 'dark' ? '#0a0d11' : '#f3f5f7');
+      metaTheme.setAttribute('content', state.theme === 'dark' ? '#05070a' : '#eef1f5');
     }
   }
 
   function applyFormat() {
     setText(btnHour, state.hour24 ? '24시간' : '12시간');
     setText(btnSec, state.sec ? '초 표시' : '초 숨김');
-    secEl.style.display = state.sec ? 'inline-block' : 'none';
-    ampmEl.style.display = state.hour24 ? 'none' : 'inline-block';
+    lastH = '';
+    lastM = '';
     render();
-    fit();
+  }
+
+  function applyDim() {
+    if (state.dim) {
+      appEl.className = appEl.className + ' dim';
+    } else {
+      appEl.className = appEl.className.replace(/\s*dim/g, '');
+    }
+    setOn(btnDim, state.dim);
   }
 
   function toggleTheme() {
@@ -439,6 +632,12 @@
     applyFormat();
   }
 
+  function toggleDim() {
+    state.dim = !state.dim;
+    lsSet(K_DIM, state.dim ? '1' : '0');
+    applyDim();
+  }
+
   function loadState() {
     var t = lsGet(K_THEME);
     if (t === 'light' || t === 'dark') {
@@ -456,38 +655,146 @@
     } else if (s === '1') {
       state.sec = true;
     }
+    var d = lsGet(K_DIM);
+    if (d === '0') {
+      state.dim = false;
+    } else if (d === '1') {
+      state.dim = true;
+    }
   }
 
-  /* ── 조작 ── */
-  function inCtrl(el) {
-    var n = el;
-    var cn;
-    while (n && n !== document.body) {
-      cn = n.className;
-      if (typeof cn === 'string' && cn.indexOf('ctrl') >= 0) {
-        return true;
+  /* ── 3초 자동 숨김 ── */
+  function showBar() {
+    barEl.className = barEl.className.replace(/\s*hidden/g, '');
+    if (hideTimer) {
+      clearTimeout(hideTimer);
+    }
+    hideTimer = setTimeout(function () {
+      hideTimer = null;
+      if (barEl.className.indexOf('hidden') < 0) {
+        barEl.className = barEl.className + ' hidden';
       }
-      if (n.tagName === 'BUTTON') {
-        return true;
-      }
-      n = n.parentNode;
-    }
-    return false;
+    }, AUTO_HIDE_MS);
   }
 
-  function hideHint() {
-    if (hintEl && hintEl.className.indexOf('gone') < 0) {
-      hintEl.className = 'hint gone';
+  function onAnyInput() {
+    showBar();
+  }
+
+  /* ── 화면 맞춤 (clamp() 미지원 대응: 직접 측정해서 px 지정) ── */
+  function fit() {
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var padX = (vw < 560) ? 12 : 20;
+    var stagePadTop = (vw < 620) ? 10 : 16;
+    var stagePadBottom = (vw < 620) ? 86 : 96;
+    var availW = vw - padX * 2;
+    var availH = vh - stagePadTop - stagePadBottom;
+    if (availW < 80) {
+      availW = 80;
+    }
+    if (availH < 80) {
+      availH = 80;
+    }
+
+    var AR = 0.80;       /* 카드 가로 / 세로 */
+    var GAPR = 0.10;     /* 카드 사이 간격 / 카드 가로 */
+    var cardH = availH * 0.97;
+    var cardW = cardH * AR;
+    if (cardW * (2 + GAPR) > availW) {
+      cardW = availW / (2 + GAPR);
+      cardH = cardW / AR;
+    }
+    cardW = Math.floor(cardW);
+    cardH = Math.floor(cardH);
+    var gap = Math.round(cardW * GAPR);
+    if (gap < 8) {
+      gap = 8;
+    }
+
+    var radius = Math.round(cardW * 0.115);
+    cardHEl.style.width = cardW + 'px';
+    cardHEl.style.height = cardH + 'px';
+    cardHEl.style.borderRadius = radius + 'px';
+    cardHEl.style.marginRight = gap + 'px';
+    cardMEl.style.width = cardW + 'px';
+    cardMEl.style.height = cardH + 'px';
+    cardMEl.style.borderRadius = radius + 'px';
+
+    var capFs = Math.round(cardW * 0.058);
+    if (capFs < 10) {
+      capFs = 10;
+    }
+    var cornerFs = Math.round(cardW * 0.072);
+    if (cornerFs < 11) {
+      cornerFs = 11;
+    }
+    var topPad = Math.round(cardH * 0.085);
+    var botPad = Math.round(cardH * 0.09);
+    var sidePad = Math.round(cardW * 0.085);
+
+    capDateEl.style.fontSize = capFs + 'px';
+    capDowEl.style.fontSize = capFs + 'px';
+    capDateEl.style.top = topPad + 'px';
+    capDowEl.style.top = topPad + 'px';
+    ampmEl.style.fontSize = cornerFs + 'px';
+    secEl.style.fontSize = cornerFs + 'px';
+    ampmEl.style.bottom = botPad + 'px';
+    secEl.style.bottom = botPad + 'px';
+    ampmEl.style.left = sidePad + 'px';
+    secEl.style.right = sidePad + 'px';
+
+    /* 숫자: 100px로 재고 카드 폭·높이에 맞춰 축소 */
+    var boxW = cardW * 0.86;
+    var boxH = cardH * 0.60;
+    numHEl.style.fontSize = '100px';
+    numMEl.style.fontSize = '100px';
+    var w1 = numHEl.getBoundingClientRect().width;
+    var w2 = numMEl.getBoundingClientRect().width;
+    if (!w1) {
+      w1 = 118;
+    }
+    if (!w2) {
+      w2 = 118;
+    }
+    var wMax = (w1 > w2) ? w1 : w2;
+    var fs = boxW * 100 / wMax;
+    if (fs > boxH) {
+      fs = boxH;
+    }
+    fs = Math.floor(fs);
+    if (fs < 24) {
+      fs = 24;
+    }
+    numHEl.style.fontSize = fs + 'px';
+    numMEl.style.fontSize = fs + 'px';
+  }
+
+  function scheduleFit() {
+    if (fitTimer) {
+      clearTimeout(fitTimer);
+    }
+    fitTimer = setTimeout(function () {
+      fitTimer = null;
+      fit();
+    }, 120);
+  }
+
+  function render() {
+    var now = new Date();
+    if (state.mode === 'pomo') {
+      renderPomo();
+    } else {
+      renderClock(now);
     }
   }
 
-  function onDocClick(e) {
-    var t = e.target || e.srcElement;
-    if (inCtrl(t)) {
-      return;
+  function tick() {
+    if (state.mode === 'pomo') {
+      pomoTick();
+    } else {
+      renderClock(new Date());
     }
-    hideHint();
-    toggleTheme();
   }
 
   function onVisible() {
@@ -508,40 +815,39 @@
     }
   }
 
+  function bindBtn(btn, fn) {
+    btn.onclick = function (e) {
+      if (e && e.stopPropagation) {
+        e.stopPropagation();
+      }
+      fn();
+      showBar();
+      return false;
+    };
+  }
+
   function init() {
-    metaTheme = document.querySelector('meta[name="theme-color"]');
-    buildTime();
-    buildSec();
     loadState();
     applyTheme();
+    applyDim();
     applyFormat();
+    updateModeUI();
+    updatePomoBtn();
 
-    btnTheme.onclick = function (e) {
-      if (e && e.stopPropagation) {
-        e.stopPropagation();
-      }
-      hideHint();
-      toggleTheme();
-      return false;
-    };
-    btnHour.onclick = function (e) {
-      if (e && e.stopPropagation) {
-        e.stopPropagation();
-      }
-      hideHint();
-      toggleHour();
-      return false;
-    };
-    btnSec.onclick = function (e) {
-      if (e && e.stopPropagation) {
-        e.stopPropagation();
-      }
-      hideHint();
-      toggleSec();
-      return false;
-    };
+    bindBtn(btnModeClock, function () { setMode('clock'); });
+    bindBtn(btnModePomo, function () { setMode('pomo'); });
+    bindBtn(btnStart, startPause);
+    bindBtn(btnReset, resetPomo);
+    bindBtn(btnTheme, toggleTheme);
+    bindBtn(btnHour, toggleHour);
+    bindBtn(btnSec, toggleSec);
+    bindBtn(btnDim, toggleDim);
 
-    document.addEventListener('click', onDocClick, false);
+    document.addEventListener('touchstart', onAnyInput, false);
+    document.addEventListener('mousedown', onAnyInput, false);
+    document.addEventListener('mousemove', onAnyInput, false);
+    document.addEventListener('click', onAnyInput, false);
+    document.addEventListener('keydown', onAnyInput, false);
     window.addEventListener('resize', scheduleFit, false);
     window.addEventListener('orientationchange', function () {
       setTimeout(fit, 350);
@@ -550,11 +856,12 @@
     document.addEventListener('visibilitychange', onVisible, false);
     window.addEventListener('focus', onVisible, false);
 
-    setInterval(render, 250);
-
-    setTimeout(fit, 0);
-    setTimeout(fit, 300);
-    setTimeout(hideHint, 9000);
+    render();
+    fit();
+    setTimeout(fit, 60);
+    setTimeout(fit, 320);
+    showBar();
+    setInterval(tick, 250);
     keepAwake();
   }
 
