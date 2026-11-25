@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JJ 시계">
+<meta name="application-name" content="JJ WORKS 탁상시계">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#0a0d11">
+<title>JJ WORKS · 탁상시계</title>
+<style>
+  * { -webkit-box-sizing: border-box; box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background-color: #0a0d11;
+  }
+  html {
+    -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; text-size-adjust: 100%;
+  }
+  body {
+    overflow: hidden;
+    /* iOS 12 = SF(-apple-system). 리눅스 검증 환경용 대체글꼴을 앞세워 미리보기도 SF에 가깝게 */
+    font-family: "Liberation Sans", "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", Helvetica, Arial, "Noto Sans CJK KR", sans-serif;
+    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    touch-action: manipulation;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+    display: -webkit-box; display: -ms-flexbox; display: flex;
+    -webkit-box-orient: vertical; -webkit-box-direction: normal;
+    -ms-flex-direction: column; flex-direction: column;
+    overflow: hidden;
+    -webkit-transition: background-color .5s ease, color .5s ease;
+    transition: background-color .5s ease, color .5s ease;
+  }
+
+  .bar {
+    position: relative; z-index: 3; flex: 0 0 auto;
+    display: -webkit-box; display: -ms-flexbox; display: flex;
+    -webkit-box-align: center; -ms-flex-align: center; align-items: center;
+    -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between;
+    padding: 13px 22px;
+  }
+  .mark {
+    font-size: 11px; line-height: 1; font-weight: 700;
+    letter-spacing: .32em; text-transform: uppercase;
+  }
+
+  .stage {
+    flex: 1 1 auto; min-height: 0;
+    display: -webkit-box; display: -ms-flexbox; display: flex;
+    -webkit-box-orient: vertical; -webkit-box-direction: normal;
+    -ms-flex-direction: column; flex-direction: column;
+    -webkit-box-align: center; -ms-flex-align: center; align-items: center;
+    -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center;
+    padding: 0 18px; overflow: hidden;
+  }
+
+  .clock {
+    display: -webkit-box; display: -ms-flexbox; display: flex;
+    -webkit-box-align: baseline; -ms-flex-align: baseline; align-items: baseline;
+    -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center;
+    white-space: nowrap;
+    font-size: 200px; line-height: 1; font-weight: 800; letter-spacing: 0;
+    -webkit-font-variant-numeric: tabular-nums; font-variant-numeric: tabular-nums;
+    -webkit-transition: color .5s ease; transition: color .5s ease;
+  }
+  .d {
+    display: inline-block; width: .60em; text-align: center;
+  }
+  .colon {
+    display: inline-block; width: .34em; text-align: center;
+    position: relative; top: -.03em;
+    -webkit-transition: opacity .22s linear; transition: opacity .22s linear;
+  }
+  .ampm {
+    display: inline-block; white-space: nowrap;
+    font-size: .155em; font-weight: 700; letter-spacing: .04em;
+    margin-right: .30em; -ms-flex-item-align: center; align-self: center;
+  }
+  .sec {
+    display: inline-block; white-space: nowrap;
+    font-size: .30em; font-weight: 700; letter-spacing: 0;
+    margin-left: .10em;
+    -webkit-font-variant-numeric: tabular-nums; font-variant-numeric: tabular-nums;
+  }
+  .sec .d { width: .62em; }
+
+  .date {
+    display: block; font-size: 20px; line-height: 1.2;
+    font-weight: 500; letter-spacing: .01em;
+    white-space: nowrap; text-align: center;
+  }
+
+  .ctrl {
+    display: -webkit-box; display: -ms-flexbox; display: flex;
+    -webkit-box-align: center; -ms-flex-align: center; align-items: center;
+  }
+  .btn {
+    font-family: inherit; font-size: 11px; line-height: 1; font-weight: 700;
+    letter-spacing: .06em;
+    padding: 8px 12px; margin-left: 8px;
+    background-color: transparent; background-image: none;
+    border-radius: 999px; border-width: 1px; border-style: solid;
+    -webkit-appearance: none; appearance: none;
+    cursor: pointer;
+    -webkit-transition: opacity .2s ease, border-color .2s ease;
+    transition: opacity .2s ease, border-color .2s ease;
+  }
+  .btn:active { opacity: 1 !important; }
+
+  .hint {
+    position: absolute; left: 50%; top: 50%;
+    -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%);
+    font-size: 11px; letter-spacing: .04em; white-space: nowrap;
+    opacity: 1; pointer-events: none;
+    -webkit-transition: opacity .9s ease; transition: opacity .9s ease;
+  }
+  .hint.gone { opacity: 0; }
+
+  /* ── 다크 테마 ── */
+  [data-theme="dark"] .app {
+    background-color: #0a0d11;
+    background-image: -webkit-radial-gradient(50% 42%, 160% 140%, #18232f 0%, #0b1016 58%, #05070a 100%);
+    background-image: radial-gradient(130% 110% at 50% 42%, #18232f 0%, #0b1016 58%, #05070a 100%);
+    color: #f2f6fa;
+  }
+  [data-theme="dark"] .mark { color: rgba(232, 240, 248, .40); }
+  [data-theme="dark"] .clock { color: #f4f7fb; }
+  [data-theme="dark"] .colon { color: rgba(255, 179, 64, .88); }
+  [data-theme="dark"] .ampm { color: rgba(255, 179, 64, .88); }
+  [data-theme="dark"] .sec { color: #ffb340; }
+  [data-theme="dark"] .date { color: rgba(223, 233, 244, .60); }
+  [data-theme="dark"] .btn { color: rgba(223, 233, 244, .55); border-color: rgba(150, 170, 192, .30); }
+  [data-theme="dark"] .hint { color: rgba(223, 233, 244, .36); }
+
+  /* ── 라이트 테마 ── */
+  [data-theme="light"] .app {
+    background-color: #f3f5f7;
+    background-image: -webkit-radial-gradient(50% 38%, 160% 140%, #ffffff 0%, #eef1f5 58%, #e1e6ec 100%);
+    background-image: radial-gradient(130% 110% at 50% 38%, #ffffff 0%, #eef1f5 58%, #e1e6ec 100%);
+    color: #0e141a;
+  }
+  [data-theme="light"] .mark { color: rgba(16, 24, 32, .38); }
+  [data-theme="light"] .clock { color: #0f151b; }
+  [data-theme="light"] .colon { color: rgba(178, 102, 0, .88); }
+  [data-theme="light"] .ampm { color: rgba(178, 102, 0, .88); }
+  [data-theme="light"] .sec { color: #b86600; }
+  [data-theme="light"] .date { color: rgba(20, 28, 36, .62); }
+  [data-theme="light"] .btn { color: rgba(20, 28, 36, .58); border-color: rgba(46, 62, 80, .24); }
+  [data-theme="light"] .hint { color: rgba(20, 28, 36, .40); }
+
+  @media (max-width: 560px) {
+    .hint { display: none; }
+    .bar { padding: 10px 14px; }
+    .mark { font-size: 10px; letter-spacing: .26em; }
+    .btn { font-size: 10px; padding: 7px 10px; margin-left: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <div class="bar bar-top">
+    <span class="mark">JJ WORKS</span>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="clock" id="clock">
+      <span class="ampm" id="ampm">오후</span>
+      <span class="time" id="time"></span>
+      <span class="sec" id="sec"></span>
+    </div>
+    <div class="date" id="date"><span id="dateText">2026년 11월 23일 월요일</span></div>
+  </div>
+
+  <div class="bar bar-bottom">
+    <span class="mark">JJ WORKS</span>
+    <span class="hint" id="hint">화면 탭 = 다크/라이트 &middot; iPad &lsquo;자동 잠금&rsquo;은 &lsquo;안 함&rsquo; 권장</span>
+    <span class="ctrl">
+      <button type="button" class="btn" id="bTheme" aria-label="다크 라이트 테마 전환">다크</button>
+      <button type="button" class="btn" id="bHour" aria-label="12시간제와 24시간제 전환">24시간</button>
+      <button type="button" class="btn" id="bSec" aria-label="초 표시 켜기 끄기">초 표시</button>
+    </span>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var DAYS = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+  var K_THEME = 'jjclock.theme';
+  var K_HOUR = 'jjclock.hour24';
+  var K_SEC = 'jjclock.sec';
+
+  var htmlEl = document.documentElement;
+  var stageEl = document.getElementById('stage');
+  var clockEl = document.getElementById('clock');
+  var timeEl = document.getElementById('time');
+  var secEl = document.getElementById('sec');
+  var ampmEl = document.getElementById('ampm');
+  var dateEl = document.getElementById('date');
+  var dateTextEl = document.getElementById('dateText');
+  var hintEl = document.getElementById('hint');
+  var btnTheme = document.getElementById('bTheme');
+  var btnHour = document.getElementById('bHour');
+  var btnSec = document.getElementById('bSec');
+
+  var HDIGITS = [];
+  var SDIGITS = [];
+  var colonEl = null;
+  var metaTheme = null;
+
+  var state = { theme: 'dark', hour24: true, sec: true };
+  var lastDateKey = '';
+  var fitTimer = null;
+  var LAST_COLON = '';
+
+  /* ── 저장소 (localStorage는 사파리 사생활 보호 모드에서 예외가 날 수 있어 감싼다) ── */
+  function lsGet(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
+  function lsSet(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (e) {
+      /* 저장 실패해도 시계 동작에는 영향 없음 */
+    }
+  }
+
+  function p2(n) {
+    return (n < 10 ? '0' : '') + n;
+  }
+
+  function setText(el, txt) {
+    if (el && el.textContent !== txt) {
+      el.textContent = txt;
+    }
+  }
+
+  function makeDigit() {
+    var sp = document.createElement('span');
+    sp.className = 'd';
+    sp.appendChild(document.createTextNode('0'));
+    return sp;
+  }
+
+  function buildTime() {
+    var i, sp;
+    while (timeEl.firstChild) {
+      timeEl.removeChild(timeEl.firstChild);
+    }
+    HDIGITS = [];
+    for (i = 0; i < 2; i++) {
+      sp = makeDigit();
+      timeEl.appendChild(sp);
+      HDIGITS.push(sp);
+    }
+    colonEl = document.createElement('span');
+    colonEl.className = 'colon';
+    colonEl.appendChild(document.createTextNode(':'));
+    timeEl.appendChild(colonEl);
+    for (i = 2; i < 4; i++) {
+      sp = makeDigit();
+      timeEl.appendChild(sp);
+      HDIGITS.push(sp);
+    }
+  }
+
+  function buildSec() {
+    var i, sp;
+    while (secEl.firstChild) {
+      secEl.removeChild(secEl.firstChild);
+    }
+    SDIGITS = [];
+    for (i = 0; i < 2; i++) {
+      sp = makeDigit();
+      secEl.appendChild(sp);
+      SDIGITS.push(sp);
+    }
+  }
+
+  /* ── 시간 표시 ── */
+  function render() {
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    var s = now.getSeconds();
+    var hh = h;
+    var label = '';
+
+    if (!state.hour24) {
+      hh = h % 12;
+      if (hh === 0) {
+        hh = 12;
+      }
+      label = (h < 12 ? '오전' : '오후');
+    }
+
+    var hs = p2(hh);
+    var ms = p2(m);
+    setText(HDIGITS[0], hs.charAt(0));
+    setText(HDIGITS[1], hs.charAt(1));
+    setText(HDIGITS[2], ms.charAt(0));
+    setText(HDIGITS[3], ms.charAt(1));
+
+    if (state.sec) {
+      var ss = p2(s);
+      setText(SDIGITS[0], ss.charAt(0));
+      setText(SDIGITS[1], ss.charAt(1));
+    }
+
+    setText(ampmEl, label);
+
+    var op = (s % 2 === 0) ? '1' : '0.72';
+    if (colonEl && op !== LAST_COLON) {
+      LAST_COLON = op;
+      colonEl.style.opacity = op;
+    }
+
+    var dkey = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
+    if (dkey !== lastDateKey) {
+      lastDateKey = dkey;
+      setText(dateTextEl, now.getFullYear() + '년 ' + (now.getMonth() + 1) + '월 ' + now.getDate() + '일 ' + DAYS[now.getDay()]);
+      fit();
+    }
+  }
+
+  /* ── 화면에 꽉 차게 크기 맞추기 (clamp() 미지원 대응: 직접 측정해서 px로 지정) ── */
+  function fit() {
+    var TRIAL = 60;
+    var padX = 36;
+    var stageW = stageEl.clientWidth || window.innerWidth;
+    var availW = stageW - padX;
+    if (availW < 60) {
+      availW = 60;
+    }
+
+    clockEl.style.fontSize = TRIAL + 'px';
+    var wTrial = clockEl.getBoundingClientRect().width;
+    var hTrial = clockEl.getBoundingClientRect().height;
+    if (!wTrial || !hTrial) {
+      wTrial = 195;
+      hTrial = TRIAL;
+    }
+
+    var wLimit = (availW * 0.94) * TRIAL / wTrial;
+
+    var trialDate = Math.round(Math.max(16, Math.min(46, wLimit * 0.17)));
+    dateEl.style.fontSize = trialDate + 'px';
+    dateEl.style.marginTop = Math.round(trialDate * 0.85) + 'px';
+    var dateH = dateEl.getBoundingClientRect().height;
+
+    var stageH = stageEl.clientHeight || window.innerHeight;
+    var availH = stageH - dateH - Math.round(trialDate * 0.85) - 12;
+    if (availH < 90) {
+      availH = 90;
+    }
+    var hLimit = (availH * 0.98) * TRIAL / hTrial;
+
+    var px = Math.min(wLimit, hLimit);
+    if (px < 44) {
+      px = 44;
+    }
+    px = Math.floor(px);
+    clockEl.style.fontSize = px + 'px';
+
+    dateEl.style.fontSize = '100px';
+    var dW = dateTextEl.getBoundingClientRect().width;
+    if (!dW) {
+      dW = 700;
+    }
+    var dLimitW = (availW * 0.96) * 100 / dW;
+    var dSize = Math.min(px * 0.17, 46, dLimitW);
+    if (dSize < 16) {
+      dSize = 16;
+    }
+    dSize = Math.floor(dSize);
+    dateEl.style.fontSize = dSize + 'px';
+    dateEl.style.marginTop = Math.round(dSize * 0.85) + 'px';
+  }
+
+  function scheduleFit() {
+    if (fitTimer) {
+      clearTimeout(fitTimer);
+    }
+    fitTimer = setTimeout(function () {
+      fitTimer = null;
+      fit();
+    }, 120);
+  }
+
+  /* ── 설정 반영 ── */
+  function applyTheme() {
+    htmlEl.setAttribute('data-theme', state.theme);
+    setText(btnTheme, state.theme === 'dark' ? '다크' : '라이트');
+    if (metaTheme) {
+      metaTheme.setAttribute('content', state.theme === 'dark' ? '#0a0d11' : '#f3f5f7');
+    }
+  }
+
+  function applyFormat() {
+    setText(btnHour, state.hour24 ? '24시간' : '12시간');
+    setText(btnSec, state.sec ? '초 표시' : '초 숨김');
+    secEl.style.display = state.sec ? 'inline-block' : 'none';
+    ampmEl.style.display = state.hour24 ? 'none' : 'inline-block';
+    render();
+    fit();
+  }
+
+  function toggleTheme() {
+    state.theme = (state.theme === 'dark') ? 'light' : 'dark';
+    lsSet(K_THEME, state.theme);
+    applyTheme();
+  }
+
+  function toggleHour() {
+    state.hour24 = !state.hour24;
+    lsSet(K_HOUR, state.hour24 ? '1' : '0');
+    applyFormat();
+  }
+
+  function toggleSec() {
+    state.sec = !state.sec;
+    lsSet(K_SEC, state.sec ? '1' : '0');
+    applyFormat();
+  }
+
+  function loadState() {
+    var t = lsGet(K_THEME);
+    if (t === 'light' || t === 'dark') {
+      state.theme = t;
+    }
+    var h = lsGet(K_HOUR);
+    if (h === '0') {
+      state.hour24 = false;
+    } else if (h === '1') {
+      state.hour24 = true;
+    }
+    var s = lsGet(K_SEC);
+    if (s === '0') {
+      state.sec = false;
+    } else if (s === '1') {
+      state.sec = true;
+    }
+  }
+
+  /* ── 조작 ── */
+  function inCtrl(el) {
+    var n = el;
+    var cn;
+    while (n && n !== document.body) {
+      cn = n.className;
+      if (typeof cn === 'string' && cn.indexOf('ctrl') >= 0) {
+        return true;
+      }
+      if (n.tagName === 'BUTTON') {
+        return true;
+      }
+      n = n.parentNode;
+    }
+    return false;
+  }
+
+  function hideHint() {
+    if (hintEl && hintEl.className.indexOf('gone') < 0) {
+      hintEl.className = 'hint gone';
+    }
+  }
+
+  function onDocClick(e) {
+    var t = e.target || e.srcElement;
+    if (inCtrl(t)) {
+      return;
+    }
+    hideHint();
+    toggleTheme();
+  }
+
+  function onVisible() {
+    render();
+    fit();
+  }
+
+  function keepAwake() {
+    try {
+      if (navigator.wakeLock && navigator.wakeLock.request) {
+        var req = navigator.wakeLock.request('screen');
+        if (req && req['catch']) {
+          req['catch'](function () {});
+        }
+      }
+    } catch (e) {
+      /* iOS 12에는 없음 */
+    }
+  }
+
+  function init() {
+    metaTheme = document.querySelector('meta[name="theme-color"]');
+    buildTime();
+    buildSec();
+    loadState();
+    applyTheme();
+    applyFormat();
+
+    btnTheme.onclick = function (e) {
+      if (e && e.stopPropagation) {
+        e.stopPropagation();
+      }
+      hideHint();
+      toggleTheme();
+      return false;
+    };
+    btnHour.onclick = function (e) {
+      if (e && e.stopPropagation) {
+        e.stopPropagation();
+      }
+      hideHint();
+      toggleHour();
+      return false;
+    };
+    btnSec.onclick = function (e) {
+      if (e && e.stopPropagation) {
+        e.stopPropagation();
+      }
+      hideHint();
+      toggleSec();
+      return false;
+    };
+
+    document.addEventListener('click', onDocClick, false);
+    window.addEventListener('resize', scheduleFit, false);
+    window.addEventListener('orientationchange', function () {
+      setTimeout(fit, 350);
+      setTimeout(fit, 900);
+    }, false);
+    document.addEventListener('visibilitychange', onVisible, false);
+    window.addEventListener('focus', onVisible, false);
+
+    setInterval(render, 250);
+
+    setTimeout(fit, 0);
+    setTimeout(fit, 300);
+    setTimeout(hideHint, 9000);
+    keepAwake();
+  }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    init();
+  } else {
+    document.addEventListener('DOMContentLoaded', init, false);
+  }
+})();
+</script>
+
+</body>
+</html>
